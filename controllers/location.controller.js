@@ -12,6 +12,10 @@ const trackLocation = asyncHandler(async (req, res) => {
   if (!lat || !lon)
     throw new ApiError(400, 'Latitude and Longitude are required');
 
+  if (lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+    throw new ApiError(400, 'Invalid latitude or longitude values');
+  }
+
   lat = parseFloat(lat);
   lon = parseFloat(lon);
 
