@@ -5,10 +5,11 @@ import {
   trackLocation,
 } from '../controllers/location.controller.js';
 import { verifyAdmin, verifyJWT } from '../middlewares/auth.middleware.js';
+import { locationLimiter } from '../middlewares/rateLimit.middleware.js';
 
 const router = express.Router();
 
-router.post('/track', verifyJWT, trackLocation);
+router.post('/track', locationLimiter, verifyJWT, trackLocation);
 
 // admin
 router.get('/admin/locations', verifyJWT, verifyAdmin, getLiveLocations);

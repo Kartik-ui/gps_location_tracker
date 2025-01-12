@@ -8,4 +8,7 @@ const locationSchema = new Schema(
   { timestamps: true }
 );
 
+locationSchema.index({ user: 1 });
+locationSchema.index({ createdAt: 1 }, { expireAfterSeconds: 24 * 60 * 60 });
+
 export const Location = model('Location', locationSchema);

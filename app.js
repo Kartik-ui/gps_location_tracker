@@ -20,12 +20,13 @@ app.use(express.static('public'));
 app.use(cookieParser());
 
 //route imports
+import { apiLimiter } from './middlewares/rateLimit.middleware.js';
 import { locationRouter } from './routes/location.routes.js';
 import { userRouter } from './routes/user.routes.js';
 
 //routes
-app.use('/api/v1/user', userRouter);
-app.use('/api/v1/location', locationRouter);
+app.use('/api/v1/user', apiLimiter, userRouter);
+app.use('/api/v1/location', apiLimiter, locationRouter);
 
 app.use(errorMiddleware);
 

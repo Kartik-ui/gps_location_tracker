@@ -121,14 +121,28 @@ const updateUser = asyncHandler(async (req, res) => {
 });
 
 const getAllUsers = asyncHandler(async (req, res) => {
-  const { page = 1, limit = 10, sort = '-createdAt' } = req.query;
-  const skip = (parseInt(page) - 1) * parseInt(limit);
-  const users = await User.find({})
-    .limit(parseInt(limit))
+  let { page = 1, limit = 10, sort = '-createdAt', search = '' } = req.query;
+
+  page = parseInt(page, 10);
+  limit = parseInt(limit, 10);
+  const skip = (page - 1) * limit;
+
+  const searchQuery = search
+    ? {
+        $or: [
+          { name: { $regex: search, $options: 'i' } },
+          { email: { $regex: search, $options: 'i' } },
+        ],
+      }
+    : {};
+
+  const users = await User.find(searchQuery)
+    .limit(limit)
     .skip(skip)
+    .sort(sort)
     .select('-password -refreshToken');
 
-  const totalUser = await User.countDocuments({});
+  const totalUser = await User.countDocuments(searchQuery);
 
   return res.status(200).json(
     new ApiResponse(
@@ -136,8 +150,8 @@ const getAllUsers = asyncHandler(async (req, res) => {
       {
         users,
         totalUser,
-        page: parseInt(page),
-        limit: parseInt(limit),
+        page,
+        limit,
       },
       'All users fetched successfully'
     )
@@ -152,7 +166,7 @@ const deleteUser = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, user, 'User deleted successfully'));
+    .json(new ApiResponse(200, {}, 'User deleted successfully'));
 });
 
 export {
