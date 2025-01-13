@@ -83,4 +83,11 @@ This project is a scalable backend system designed to track the live GPS locatio
    ```
 ## POSTMAN API json file
 https://drive.google.com/file/d/1G6_A4YRL1a-sX29zmjZEGRgpMiQIQ2QY/view?usp=sharing
-simply download the json file by visiting the link and import in your postman to run all the apis of the project in your postman
+simply download the json file by visiting the link and import in your postman to run all the apis of the project in your postman.
+## Admin email and password
+```bash
+{
+   "email": "admin@gmail.com",
+   "password": "1234"
+}
+```
