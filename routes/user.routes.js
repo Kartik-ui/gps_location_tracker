@@ -6,6 +6,7 @@ import {
   logoutUser,
   refreshAccessToken,
   registerUser,
+  toggleAdmin,
   updateUser,
 } from '../controllers/user.controller.js';
 
@@ -20,6 +21,8 @@ router.get('/logout', verifyJWT, logoutUser);
 
 router.post('/register', registerUser);
 router.put('/update', verifyJWT, updateUser);
+
+router.get('/toggle-admin/:userId', verifyJWT, verifyAdmin, toggleAdmin);
 
 router.get('/', verifyJWT, verifyAdmin, getAllUsers);
 

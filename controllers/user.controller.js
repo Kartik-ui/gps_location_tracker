@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import { isValidObjectId } from 'mongoose';
 import { User } from '../models/user.model.js';
 import { ApiError } from '../utils/apiError.js';
 import { ApiResponse } from '../utils/apiResponse.js';
@@ -121,20 +122,43 @@ const updateUser = asyncHandler(async (req, res) => {
 });
 
 const getAllUsers = asyncHandler(async (req, res) => {
-  let { page = 1, limit = 10, sort = '-createdAt', search = '' } = req.query;
+  let {
+    page = 1,
+    limit = 10,
+    sort = '-createdAt',
+    search = '',
+    userType = 'all',
+  } = req.query;
 
   page = parseInt(page, 10);
   limit = parseInt(limit, 10);
   const skip = (page - 1) * limit;
 
+  let adminFilter = {};
+  switch (userType.toLowerCase()) {
+    case 'admin':
+      adminFilter = { isAdmin: true };
+      break;
+    case 'regular':
+      adminFilter = { isAdmin: false };
+      break;
+    default:
+      adminFilter = {};
+  }
+
   const searchQuery = search
     ? {
-        $or: [
-          { name: { $regex: search, $options: 'i' } },
-          { email: { $regex: search, $options: 'i' } },
+        $and: [
+          adminFilter,
+          {
+            $or: [
+              { name: { $regex: search, $options: 'i' } },
+              { email: { $regex: search, $options: 'i' } },
+            ],
+          },
         ],
       }
-    : {};
+    : adminFilter;
 
   const users = await User.find(searchQuery)
     .limit(limit)
@@ -143,6 +167,9 @@ const getAllUsers = asyncHandler(async (req, res) => {
     .select('-password -refreshToken');
 
   const totalUser = await User.countDocuments(searchQuery);
+
+  const userTypeString =
+    userType === 'all' ? 'All' : userType === 'admin' ? 'Admin' : 'Regular';
 
   return res.status(200).json(
     new ApiResponse(
@@ -153,7 +180,7 @@ const getAllUsers = asyncHandler(async (req, res) => {
         page,
         limit,
       },
-      'All users fetched successfully'
+      `${userTypeString} users fetched successfully`
     )
   );
 });
@@ -169,6 +196,25 @@ const deleteUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, 'User deleted successfully'));
 });
 
+const toggleAdmin = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+  if (!isValidObjectId(userId)) throw new ApiError(400, 'Invalid user Id');
+
+  const user = await User.findById(userId).select('-password -refreshToken');
+
+  if (!user) throw new ApiError(404, 'User not found');
+
+  user.isAdmin = !user.isAdmin;
+
+  await user.save({ validateBeforeSave: false });
+
+  const message = user.isAdmin
+    ? 'Admin rights granted'
+    : 'Admin rights revoked';
+
+  return res.status(200).json(new ApiResponse(200, user, message));
+});
+
 export {
   deleteUser,
   getAllUsers,
@@ -176,5 +222,6 @@ export {
   logoutUser,
   refreshAccessToken,
   registerUser,
+  toggleAdmin,
   updateUser,
 };
