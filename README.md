@@ -81,3 +81,6 @@ This project is a scalable backend system designed to track the live GPS locatio
    ```bash
    npm run dev
    ```
+## POSTMAN API json file
+https://drive.google.com/file/d/1G6_A4YRL1a-sX29zmjZEGRgpMiQIQ2QY/view?usp=sharing
+simply download the json file by visiting the link and import in your postman to run all the apis of the project in your postman
